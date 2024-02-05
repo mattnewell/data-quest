@@ -15,14 +15,6 @@ path = '/pub/time.series/pr/'
 
 
 def chunk_to_s3(url):
-    # session = boto3.Session(profile_name='sandbox')
-    # s3_client = session.client('s3')
-    # with requests.get(url, stream=True, headers=headers) as r:
-    #     r.raise_for_status()
-    #     # chunk_size is in bytes. in the real world, 8 KiB would be tiny and inefficient, but proves point
-    #     for chunk in r.iter_content(chunk_size=8192):
-    #         if chunk:
-    #             s3_client.put_object(Body=chunk, Bucket='newell-data-quest', Key=url.split('/')[-1])
     session = boto3.Session(profile_name='sandbox')
     with (open(url, 'rb', transport_params={'headers': headers}) as fin):
         with open(f's3://newell-data-quest/{url.split("/")[-1]}',
