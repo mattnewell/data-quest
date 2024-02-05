@@ -12,12 +12,16 @@ headers = {
 
 endpoint = 'https://download.bls.gov'
 path = '/pub/time.series/pr/'
+session = boto3.Session(profile_name='sandbox')
+bucket = 's3://newell-data-quest'
 
 
-def chunk_to_s3(url):
-    session = boto3.Session(profile_name='sandbox')
-    with (open(url, 'rb', transport_params={'headers': headers}) as fin):
-        with open(f's3://newell-data-quest/{url.split("/")[-1]}',
+def chunk_to_s3(source_url, s3_key):
+    with (open(source_url, 'rb', transport_params={'headers': headers}) as fin):
+        # NOTE: There is a requirement in README.md to not upload the same file twice. If that's talking about change
+        # detection, then this doesn't meet that requirement. But that's a remarkably complex and opinionated problem
+        # to solve.
+        with open(f'{bucket}/{s3_key}',
                   'wb',
                   transport_params={'client': session.client('s3')}) as fout:
             while True:
@@ -37,9 +41,18 @@ def list_urls(endpoint, path):
         return links[1:len(links)]
 
 
-start = time.time()
-files = list_urls(endpoint, path)
-for file in files:
-    chunk_to_s3(file)
-end = time.time()
-print(end-start)
+def source_bls_productivity():
+    start = time.time()
+    url = list_urls(endpoint, path)
+    for file in url:
+        chunk_to_s3(file, file.split("/")[-1])
+    end = time.time()
+    print(end-start)
+
+
+def source_datausa_nation_pop():
+    chunk_to_s3('https://datausa.io/api/data?Geography=01000US&measure=Population', 'datausa_nation_pop.json')
+
+
+source_bls_productivity()
+source_datausa_nation_pop()
