@@ -7,7 +7,10 @@ name = "pypi"
 boto3 = "*"
 requests = "*"
 beautifulsoup4 = "*"
-smart-open = {extras = ["s3", "https"], version = "*"}
+smart-open = {extras = ["s3", "http"], version = "*"}
+polars = "0.20.7"
+s3fs = "2024.2.0"
+jupyter = "*"
 
 [dev-packages]
 

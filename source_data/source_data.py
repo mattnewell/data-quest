@@ -1,3 +1,4 @@
+# TODO: Make this a Lambda on a schedule
 # TODO: Logging
 # TODO: Does smart_open handle errors, retries, and backoff?
 import time
@@ -28,15 +29,16 @@ def source_datausa_nation_pop():
 
 def list_urls(endpoint, path):
     response = requests.get(endpoint + path, headers=headers)
-    if response.status_code == 200:
+    if response.ok:
         soup = BeautifulSoup(response.text, 'html.parser')
-        raw_anchors = soup.find_all('a', href=True)
-        links = [endpoint + links['href'] for links in raw_anchors if links['href']]
+        raw_anchors = soup.find_all('a')
+        # raw_anchors are relative, make them absolute
+        links = [endpoint + links['href'] for links in raw_anchors]
         return links[1:len(links)]
 
 
 def chunk_to_s3(source_url, s3_key):
-    with (open(source_url, 'rb', transport_params={'headers': headers}) as fin):
+    with open(source_url, 'rb', transport_params={'headers': headers}) as fin:
         # NOTE: There is a requirement in README.md to not upload the same file twice. If that's talking about change
         # detection, then this doesn't meet that requirement. But that's a remarkably complex and opinionated problem
         # to solve.
