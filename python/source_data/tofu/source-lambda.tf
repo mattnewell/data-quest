@@ -59,3 +59,22 @@ resource "aws_iam_role_policy_attachment" "source_data" {
   role       = aws_iam_role.source_data.name
   policy_arn = each.value
 }
+
+
+resource "aws_cloudwatch_event_rule" "source_data" {
+    name = "newell-source-data-schedule"
+    schedule_expression = "cron(0 0 ? * 1 *)" # every sunday at 00:00 UTC
+}
+
+resource "aws_cloudwatch_event_target" "source_data" {
+    rule = aws_cloudwatch_event_rule.source_data.name
+    target_id = "processing_lambda"
+    arn = aws_lambda_function.source_data.arn
+}
+
+resource "aws_lambda_permission" "source_data" {
+    statement_id = "AllowExecutionFromCloudWatch"
+    action = "lambda:InvokeFunction"
+    function_name = aws_lambda_function.source_data.function_name
+    principal = "events.amazonaws.com"
+}
