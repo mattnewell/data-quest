@@ -10,9 +10,10 @@ beautifulsoup4 = "*"
 smart-open = {extras = ["s3", "http"], version = "*"}
 polars = "0.20.7"
 s3fs = "2024.2.0"
-jupyter = "*"
 
 [dev-packages]
+jupyter = "*"
+pipenv = "==2023.11.15"
 
 [requires]
 python_version = "3.9"

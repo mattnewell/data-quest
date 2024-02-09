@@ -1,14 +1,11 @@
 # TODO: Make this a Lambda on a schedule
 # TODO: Logging
 # TODO: Does smart_open handle errors, retries, and backoff?
-import time
-import boto3
+
 import requests
 from bs4 import BeautifulSoup
 from smart_open import open
 
-# NOTE: These are super-hardcoded, and could be more flexible
-session = boto3.Session(profile_name='sandbox')
 bucket = 's3://newell-data-quest'
 headers = {
     'User-Agent': 'matthew.newell@rearc.io'
@@ -43,8 +40,7 @@ def chunk_to_s3(source_url, s3_key):
         # detection, then this doesn't meet that requirement. But that's a remarkably complex and opinionated problem
         # to solve.
         with open(f'{bucket}/{s3_key}',
-                  'wb',
-                  transport_params={'client': session.client('s3')}) as fout:
+                  'wb') as fout:
             while True:
                 # chunk_size is in bytes. in the real world, 8 KiB would be small and inefficient, but proves point
                 chunk = fin.read(8192)
@@ -53,5 +49,7 @@ def chunk_to_s3(source_url, s3_key):
                 fout.write(chunk)
 
 
-source_bls_productivity()
-source_datausa_nation_pop()
+def handler(event, context):
+    requests.packages.urllib3.util.connection.HAS_IPV6 = False
+    source_bls_productivity()
+    source_datausa_nation_pop()

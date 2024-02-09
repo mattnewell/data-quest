@@ -4,3 +4,5 @@
   * A good fit for polars (faster than pandas), but without the complexity of spark.
 * The README refers to the two datasets using multiple names. Could be cleaned up.
 * I think the hint for trimming whitespace is a little much
+* Open Tofu
+* Local state
