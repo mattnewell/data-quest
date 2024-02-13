@@ -1,17 +1,3 @@
-data "archive_file" "source_data" {
-  type = "zip"
-
-  source_file = "${path.module}/../source_data.py"
-  output_path = "${path.module}/source_data.zip"
-}
-
-resource "aws_s3_object" "source_data" {
-  bucket = var.s3_bucket
-  key    = "source_data.zip"
-  source = data.archive_file.source_data.output_path
-  etag   = filemd5(data.archive_file.source_data.output_path)
-}
-
 resource "aws_lambda_function" "source_data" {
   function_name = "newell-source-data"
   timeout       = 30 # seconds
@@ -19,12 +5,6 @@ resource "aws_lambda_function" "source_data" {
   package_type  = "Image"
 
   role = aws_iam_role.source_data.arn
-
-#  environment {
-#    variables = {
-#      ENVIRONMENT = var.env_name
-#    }
-#  }
 }
 
 resource "aws_cloudwatch_log_group" "source_data" {
@@ -62,19 +42,19 @@ resource "aws_iam_role_policy_attachment" "source_data" {
 
 
 resource "aws_cloudwatch_event_rule" "source_data" {
-    name = "newell-source-data-schedule"
-    schedule_expression = "cron(0 0 ? * 1 *)" # every sunday at 00:00 UTC
+  name                = "newell-source-data-schedule"
+  schedule_expression = "cron(0 0 ? * 1 *)" # every sunday at 00:00 UTC
 }
 
 resource "aws_cloudwatch_event_target" "source_data" {
-    rule = aws_cloudwatch_event_rule.source_data.name
-    target_id = "processing_lambda"
-    arn = aws_lambda_function.source_data.arn
+  rule      = aws_cloudwatch_event_rule.source_data.name
+  target_id = "processing_lambda"
+  arn       = aws_lambda_function.source_data.arn
 }
 
 resource "aws_lambda_permission" "source_data" {
-    statement_id = "AllowExecutionFromCloudWatch"
-    action = "lambda:InvokeFunction"
-    function_name = aws_lambda_function.source_data.function_name
-    principal = "events.amazonaws.com"
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.source_data.function_name
+  principal     = "events.amazonaws.com"
 }
